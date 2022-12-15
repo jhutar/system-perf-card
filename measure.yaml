@@ -83,7 +83,7 @@
         - setup
 
     - name: "Install additional packages"
-      command: podman exec -ti pbench dnf -y install stress-ng sysbech
+      command: podman exec -ti pbench dnf -y install stress-ng sysbench
       tags:
         - setup
 
