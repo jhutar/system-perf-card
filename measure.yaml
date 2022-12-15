@@ -1,0 +1,189 @@
+---
+- hosts: all
+  gather_facts: no
+  vars:
+    pbench_image: quay.io/pbench/pbench-agent-all-centos-8
+    test_disk_direcotry: /fiotest
+  vars_files:
+    - secrets/config.yaml
+  roles:
+  tasks:
+    - name: "Install podman"
+      package:
+        name: podman
+        state: present
+      tags:
+        - setup
+        - debug_onetime
+
+    - name: "Pull pbench image"
+      containers.podman.podman_image:
+        name: "{{ pbench_image }}"
+      tags:
+        - setup
+        - debug_onetime
+
+    - name: "Create directory for disk test"
+      file:
+        name: "{{ test_disk_direcotry }}"
+        state: directory
+      tags:
+        - setup
+
+    - name: "Create pbench container"
+      containers.podman.podman_container:
+        name: pbench
+        image: "{{ pbench_image }}"
+        volume:
+          - "{{ test_disk_direcotry }}:/fiotest:z"
+          ###- "/root/var_lib_pbench-agent:/var/lib/pbench-agent:z"
+          - "/run:/run"
+          - "/var/log:/var/log"
+          - "/etc/machine-id:/etc/machine-id"
+          - "/etc/localtime:/etc/localtime"
+          - "/:/host"
+        ipc: host
+        network: host
+        pid: host
+        privileged: yes
+        env:
+          HOST: /host
+          NAME: "{{ inventory_hostname }}"
+          IMAGE: "{{ pbench_image }}"
+        ###init: yes
+        command: sleep 1d
+        detach: yes
+        rm: yes
+      tags:
+        - setup
+
+    - name: "Prepare pbench config"
+      copy:
+        dest: /root/pbench-agent.cfg
+        src: secrets/pbench-agent.cfg
+      tags:
+        - setup
+
+    - name: "Prepare pbench key"
+      copy:
+        dest: /root/pbench-id_rsa
+        src: secrets/pbench-id_rsa
+        mode: '0600'
+      tags:
+        - setup
+
+    - name: "Upload pbench config"
+      command: podman cp --archive --overwrite /root/pbench-agent.cfg pbench:/opt/pbench-agent/config/pbench-agent.cfg
+      tags:
+        - setup
+
+    - name: "Upload pbench key"
+      command: podman cp --archive --overwrite /root/pbench-id_rsa pbench:/opt/pbench-agent/id_rsa
+      tags:
+        - setup
+
+    - name: "Install additional packages"
+      command: podman exec -ti pbench dnf -y install stress-ng sysbech
+      tags:
+        - setup
+
+    - name: "Initiate pbench"
+      command: podman exec -ti pbench bash -c "source /opt/pbench-agent/profile; pbench-register-tool-set light"
+      tags:
+        - setup
+
+    # fio test cases from AWS EC2 docs:
+    #   https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/benchmark_procedures.html#perform_benchmarking
+    # stress-ng test cases from Red Hat docs:
+    #   https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux_for_real_time/8/html/optimizing_rhel_8_for_real_time_for_low_latency_operation/assembly_stress-testing-real-time-systems-with-stress-ng_optimizing-rhel8-for-real-time-for-low-latency-operation#doc-wrapper
+    # sysbech examples from LinuxConfig article:
+    #   https://linuxconfig.org/how-to-benchmark-your-linux-system
+
+    - name: "Run the tests"
+      ansible.builtin.include_role:
+        name: spc_run
+        apply:
+          tags:
+            - test
+      vars:
+        spc_command: "{{ item.command }}"
+        spc_cleanup: "{{ item.cleanup | default('') }}"
+        spc_regexp: "{{ item.regexp }}"
+        spc_area: "{{ item.area }}"
+      loop:
+        - command: "stress-ng --cpu 1 --cpu-method int32 --timeout 1m --oomable --metrics"
+          cleanup: ""
+          regexp: '.* cpu\s+([0-9]+) .*'
+          area: "cpu"
+
+        - command: "stress-ng --cpu 0 --cpu-method int32 --timeout 1m --oomable --metrics"
+          cleanup: ""
+          regexp: '.* cpu\s+([0-9]+) .*'
+          area: "cpu"
+
+        - command: "stress-ng --matrix 1 --timeout 1m --oomable --metrics"
+          cleanup: ""
+          regexp: '.* matrix\s+([0-9]+) .*'
+          area: "cpu"
+
+        - command: "stress-ng --matrix 0 --timeout 1m --oomable --metrics"
+          cleanup: ""
+          regexp: '.* matrix\s+([0-9]+) .*'
+          area: "cpu"
+
+        - command: "stress-ng --mq 0 -t 30s --oomable --metrics"
+          cleanup: ""
+          regexp: '.* mq\s+([0-9]+) .*'
+          area: "cpu"
+
+        - command: "stress-ng --vm 2 --vm-bytes 1G --page-in --timeout 1m --oomable --metrics"
+          cleanup: ""
+          regexp: '.* vm\s+([0-9]+) .*'
+          area: "memory"
+
+        - command: "stress-ng --timer 32 --timer-freq 1000000 --timeout 1m --oomable --metrics"
+          cleanup: ""
+          regexp: '.* timer\s+([0-9]+) .*'
+          area: "cpu"
+
+        - command: "stress-ng --userfaultfd 0 --timeout 1m --oomable --metrics"
+          cleanup: ""
+          regexp: '.* userfaultfd\s+([0-9]+) .*'
+          area: "cpu"
+
+        - command: "fio --directory=/fiotest --name fio_test_file --direct=1 --rw=randread --bs=16k --size=1G --numjobs=16 --time_based --runtime=60s --group_reporting --norandommap"
+          cleanup: "rm -rf /fiotest/*"
+          regexp: '.* IOPS=([0-9.kMGT]+), .*'
+          area: "disk"
+
+        - command: "fio --directory=/fiotest --ioengine=psync --name fio_test_file --direct=1 --rw=randwrite --bs=16k --size=1G --numjobs=16 --time_based --runtime=60s --group_reporting --norandommap"
+          cleanup: "rm -rf /fiotest/*"
+          regexp: '.* IOPS=([0-9.kMGT]+), .*'
+          area: "disk"
+
+        - command: "fio --directory=/fiotest --direct=1 --rw=read --randrepeat=0 --ioengine=libaio --bs=1024k --size=1G --iodepth=8 --time_based=1 --runtime=60s --name=fio_direct_read_test"
+          cleanup: "rm -rf /fiotest/*"
+          regexp: '.* IOPS=([0-9.kMGT]+), .*'
+          area: "disk"
+
+        - command: "fio --directory=/fiotest --direct=1 --rw=write --randrepeat=0 --ioengine=libaio --bs=1024k --size=1G --iodepth=8 --time_based=1 --runtime=60s --name=fio_direct_write_test"
+          cleanup: "rm -rf /fiotest/*"
+          regexp: '.* IOPS=([0-9.kMGT]+), .*'
+          area: "disk"
+      tags:
+        - test
+
+    - name: "Cleanup pbench container"
+      containers.podman.podman_container:
+        name: pbench
+        state: absent
+      tags:
+        - cleanup
+
+    - name: "Cleanup directory for disk test"
+      file:
+        name: "{{ test_disk_direcotry }}"
+        state: absent
+      tags:
+        - cleanup
+...

@@ -10,3 +10,8 @@ Notes about pbench
     # pbench-register-tool-set heavy
     # pbench-fio --config=read-test --ioengine=libaio --iodepth=1 --test-types=read --direct=1 --file-size=512M --numjobs=2 --targets=/fiotest_disk/fio
     # pbench-fio --config=read-test --ioengine=libaio --iodepth=1 --test-types=read --direct=1 --file-size=512M --numjobs=2 --targets=/fiotest_memory/fio
+
+Prerequisities
+--------------
+
+    ansible-galaxy collection install -r requirements.yaml

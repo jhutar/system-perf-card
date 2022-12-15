@@ -1,0 +1,78 @@
+---
+- name: "Running the test"
+  command: podman exec -ti pbench bash -c "source /opt/pbench-agent/profile; pbench-clear-results; pbench-user-benchmark -- {{ spc_command }}"
+  register: spc_output
+
+- name: "Running the cleanup"
+  command: podman exec -ti pbench bash -c "{{ spc_cleanup }}"
+  when: "spc_cleanup is defined and spc_cleanup"
+
+- name: "Determine result"
+  set_fact:
+    spc_result: "{{ spc_output.stdout | regex_search(spc_regexp, '\\1') }}"
+
+- name: "Determine measurements directory"
+  command: podman exec -ti pbench bash -c "ls /var/lib/pbench-agent/ | grep '^pbench-user-benchmark'"
+  register: spc_measurements_dir_cmd
+
+- name: "Determine hostname"
+  command: "hostname -f"
+  register: spc_hostname_cmd
+  when: "spc_hostname is not defined"
+
+- set_fact:
+    spc_hostname: "{{ spc_hostname_cmd.stdout }}"
+  when: "spc_hostname is not defined"
+
+- name: "Determine machine-id"
+  command: "cat /etc/machine-id"
+  register: spc_machine_id_cmd
+  when: "spc_machine_id_cmd.stdout is not defined"
+
+- set_fact:
+    spc_machine_id: "{{ spc_machine_id_cmd.stdout }}"
+  when: "spc_machine_id is not defined"
+
+- name: "Upload measurements"
+  command: podman exec -ti pbench bash -c "source /opt/pbench-agent/profile; pbench-move-results --user jhutar --prefix spc"
+
+- name: "Determine measurements URL"
+  set_fact:
+    spc_measurements_url: "{{ pbench_results_url }}{{ spc_hostname }}/spc/{{ spc_measurements_dir_cmd.stdout | default('NA') }}/"
+
+- debug:
+    var: spc_output
+- debug:
+    var: spc_result
+- debug:
+    var: spc_measurements_url
+- debug:
+    var: spc_hostname
+- debug:
+    var: spc_machine_id
+
+- name: "Upload results"
+  ansible.builtin.uri:
+    url: "{{ upload_results_url }}"
+    method: POST
+    body_format: json
+    return_content: true
+    status_code: [201]
+    headers:
+      Content-Type: application/json
+    body:
+      start: "{{ spc_output.start }}"
+      end: "{{ spc_output.end }}"
+      command: "{{ spc_command }}"
+      rc: "{{ spc_output.rc }}"
+      hostname: "{{ spc_hostname }}"
+      machine_id: "{{ spc_machine_id }}"
+      result: "{{ spc_result }}"
+      measurements_url: "{{ spc_measurements_url }}"
+      area: "{{ spc_area }}"
+  register: spc_upload_result_cmd
+
+- name: "Ensure upload worked"
+  assert:
+    that: "spc_upload_result_cmd.json.result == 'created'"
+...
