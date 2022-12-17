@@ -94,7 +94,7 @@ def api_v1_post_result():
     r.body = flask.request.json
     app_db.session.add(r)
     app_db.session.commit()
-    return r.serialize()
+    return r.serialize(), 201
 
 @app.route('/api/v1/result/<string:machine_id>', methods=['GET'])
 def api_v1_get_result_machine_id(machine_id):
