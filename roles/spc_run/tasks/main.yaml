@@ -9,7 +9,7 @@
 
 - name: "Determine result"
   set_fact:
-    spc_result: "{{ spc_output.stdout | regex_search(spc_regexp, '\\1') }}"
+    spc_result: "{{ spc_output.stdout | regex_search(spc_regexp, '\\1', multiline=True) | first }}"
 
 - name: "Determine measurements directory"
   command: podman exec -ti pbench bash -c "ls /var/lib/pbench-agent/ | grep '^pbench-user-benchmark'"

@@ -112,19 +112,19 @@
         spc_area: "{{ item.area }}"
       loop:
         - command: "sysbench memory run --memory-access-mode=seq --time=60 --threads=1"
-          regexp: '.*Total operations: [0-9]+ (\([0-9.]+\) per second)'
+          regexp: '.*Total operations: [0-9]+ \(([0-9.]+) per second\).*'
           area: "memory"
 
         - command: "sysbench memory run --memory-access-mode=seq --time=60 --threads=16"
-          regexp: '.*Total operations: [0-9]+ (\([0-9.]+\) per second)'
+          regexp: '.*Total operations: [0-9]+ \(([0-9.]+) per second\).*'
           area: "memory"
 
         - command: "sysbench memory run --memory-access-mode=rnd --time=60 --threads=1"
-          regexp: '.*Total operations: [0-9]+ (\([0-9.]+\) per second)'
+          regexp: '.*Total operations: [0-9]+ \(([0-9.]+) per second\).*'
           area: "memory"
 
         - command: "sysbench memory run --memory-access-mode=rnd --time=60 --threads=16"
-          regexp: '.*Total operations: [0-9]+ (\([0-9.]+\) per second)'
+          regexp: '.*Total operations: [0-9]+ \(([0-9.]+) per second\).*'
           area: "memory"
 
         - command: "stress-ng --cpu 1 --cpu-method int32 --timeout 1m --oomable --metrics"
