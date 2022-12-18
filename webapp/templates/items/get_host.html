@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Details on {{host.body.hostname}}{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <p>{{ host }}</p>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Hosts{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <ul>
+    {% for i in pager.items %}
+         <li><a href="{{ url_for('get_host_machine_id', machine_id=i.machine_id) }}">Host {{ i.hostname }}</a></li>
+    {% endfor %}
+    </ul>
+  </div>
+
+  <p>
+  {% if pager.has_prev %}<a href="{{ url_for('items.list_'+entity, page=pager.prev_num) }}">« prev</a>{% else %}« no prev.{% endif %}
+  | on page {{pager.page}} |
+  {% if pager.has_next %}<a href="{{ url_for('items.list_'+entity, page=pager.next_num) }}">next »</a>{% else %}no next »{% endif %}
+  </p>
+{% endblock %}
