@@ -33,6 +33,17 @@ Handy command to look into the DB:
     sqlite3 $SQLITE_FILE
     > .tables
 
+Changing schema
+---------------
+
+Initial steps:
+
+    rm -rf /tmp/database.db
+    rm -rf migrations/
+    flask db init
+    flask db migrate -m "Initial migration."
+    flask db upgrade
+
 
 Build image
 -----------
