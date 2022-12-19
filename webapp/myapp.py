@@ -223,6 +223,19 @@ def api_v1_post_result():
             host=db_host,
         )
 
+    result = flask.request.json['result']
+    if isinstance(result, str):
+        fixes = {
+            "k": 1000,
+            "M": 1000000,
+            "G": 1000000000,
+        }
+        for unit, multiplier in fixes.items():
+            if result.endswith(unit):
+                result = float(result[:-1]) * multiplier
+                break
+    result = float(result)
+
     db_result = Result(
         start=datetime.datetime.strptime(flask.request.json['start'], '%Y-%m-%d %H:%M:%S.%f'),
         end=datetime.datetime.strptime(flask.request.json['end'], '%Y-%m-%d %H:%M:%S.%f'),
@@ -230,7 +243,7 @@ def api_v1_post_result():
         command=flask.request.json['command'],
         rc=flask.request.json['rc'],
         measurements_url=flask.request.json['measurements_url'],
-        result=flask.request.json['result'],
+        result=result,
         run=db_run,
     )
 
