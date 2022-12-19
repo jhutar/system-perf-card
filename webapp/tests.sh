@@ -36,6 +36,5 @@ curl --silent -X POST http://127.0.0.1:5000/api/v1/result -H "Content-Type: appl
 curl --silent -X GET http://127.0.0.1:5000/api/v1/host | grep '"total": 1'
 curl --silent -X GET http://127.0.0.1:5000/api/v1/run | grep '"total": 2'
 curl --silent -X GET http://127.0.0.1:5000/api/v1/result | grep '"total": 3'
-curl --silent -X GET http://127.0.0.1:5000/api/v1/result
 
 echo "SUCCESS"
