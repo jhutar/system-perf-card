@@ -170,7 +170,14 @@ def get_host():
 @app.route('/host/<string:machine_id>', methods=['GET'])
 def get_host_machine_id(machine_id):
     db_host = Host.query.filter_by(machine_id=machine_id).first_or_404()
-    pager = _paginate(Run.query.filter_by(host=db_host))
+    pager = _paginate(Run.query.filter_by(host=db_host).order_by(Run.id.desc()))
+    for db_run in pager.items:
+        perf_index_sum = 0.0
+        perf_index_count = 0
+        for db_result in db_run.results:
+            perf_index_sum += db_result.perf_index()
+            perf_index_count += 1
+        db_run.perf_index = perf_index_sum / perf_index_count
     return flask.render_template('items/get_host_machine_id.html', host=db_host, pager=pager)
 
 @app.route('/run/<int:rid>', methods=['GET'])

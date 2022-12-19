@@ -12,7 +12,7 @@
   <div class="row">
     <ul>
     {% for i in pager.items %}
-         <li>Result <a href="{{ url_for('get_result_rid', rid=i.id) }}"><code>{{ i.command }}</code></a> (created at {{ i.created_at.strftime('%Y-%m-%d %H:%M:%S') }})</li>
+         <li>Result <a href="{{ url_for('get_result_rid', rid=i.id) }}"><code>{{ i.command }}</code></a> (created at {{ i.created_at.strftime('%Y-%m-%d %H:%M:%S') }}) <strong>{{ i.perf_index() }}</strong></li>
     {% endfor %}
     </ul>
   </div>
