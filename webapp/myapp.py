@@ -216,10 +216,11 @@ def api_v1_post_result():
             machine_id=flask.request.json['machine_id'],
             hostname=flask.request.json['hostname'],
         )
+        db_run = None
     else:
         db_host.hostname = flask.request.json['hostname']
+        db_run = Run.query.filter_by(name=flask.request.json['run_name'], host=db_host).first()
 
-    db_run = Run.query.filter_by(name=flask.request.json['run_name']).first()
     if db_run is None:
         db_run = Run(
             name=flask.request.json['run_name'],
