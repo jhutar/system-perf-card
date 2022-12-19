@@ -6,11 +6,20 @@
 
 {% block content %}
   <div class="row">
-    <ul>
-    {% for i in pager.items %}
-         <li><a href="{{ url_for('get_host_machine_id', machine_id=i.machine_id) }}">Host {{ i.hostname }}</a></li>
-    {% endfor %}
-    </ul>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">host</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for i in pager.items %}
+             <tr>
+                <td scope="row"><a href="{{ url_for('get_host_machine_id', machine_id=i.machine_id) }}">Host {{ i.hostname }}</a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
   </div>
 
   <p>

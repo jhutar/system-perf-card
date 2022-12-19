@@ -10,11 +10,26 @@
     <p>First seen: {{ host.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
 
   <div class="row">
-    <ul>
-    {% for i in pager.items %}
-         <li>Run <a href="{{ url_for('get_run_rid', rid=i.id) }}">{{ i.name }}</a> (created {{ i.created_at.strftime('%Y-%m-%d %H:%M:%S') }}) - {{ i.results | length }} results - avg perf index: <strong>{{ i.perf_index }}</strong></li>
-    {% endfor %}
-    </ul>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">run name</th>
+                <th scope="col">created</th>
+                <th scope="col">raw result</th>
+                <th scope="col">performance index</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for i in pager.items %}
+            <tr>
+                <td scope="row"><a href="{{ url_for('get_run_rid', rid=i.id) }}">{{ i.name }}</a></td>
+                <td>{{ i.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                <td>{{ i.results | length }}</td>
+                <td><strong>{{ i.perf_index }}</strong></td>
+             </tr>
+        {% endfor %}
+        </tbody>
+    </table>
   </div>
 
   <p>
