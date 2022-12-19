@@ -5,9 +5,64 @@
 {% endblock %}
 
 {% block content %}
-    <p>Run: {{ run.name }}</p>
-    <p>From host: <a href="{{ url_for('get_host_machine_id', machine_id=run.host.machine_id) }}">{{ run.host.hostname }}</a></p>
-    <p>First seen: {{ run.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+  <div class="row">
+
+    <div class="col">
+      <dl>
+        <dt>Run</dt>
+        <dd>{{ run.name }}</dd>
+        <dt>From host</dt>
+        <dd><a href="{{ url_for('get_host_machine_id', machine_id=run.host.machine_id) }}">{{ run.host.hostname }}</a></dd>
+        <dt>Created at</dt>
+        <dd>{{ run.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+      </dl>
+    </div>
+
+    <div class="col" style="padding: 10px;">
+      <canvas id="myChart" width="300" height="100"></canvas>
+
+      <script>
+        const ctx = document.getElementById('myChart');
+
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: [{% for i in pager.items %}"{{ i.command }}",{% endfor %}],
+            datasets: [{
+              label: 'performance index for various benchmarks',
+              data: [{% for i in pager.items %}{{ i.perf_index() }},{% endfor %}],
+              borderWidth: 1
+            }]
+          },
+          options: {
+            scales: {
+              x: {
+                ticks: {
+                  callback: function(value, index, ticks) {
+                    const v = this.getLabelForValue(value)
+                    if (v.length > 8) {
+                      return v.substr(0, 8) + '…';
+                    } else {
+                      return v
+                    }
+                  }
+                }
+              },
+              y: {
+                beginAtZero: true
+              }
+            },
+            plugins: {
+              legend: {
+                display: false
+              }
+            }
+          }
+        });
+      </script>
+    </div>
+
+  </div>
 
   <div class="row">
     <table class="table">

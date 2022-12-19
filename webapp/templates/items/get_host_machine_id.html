@@ -29,7 +29,7 @@
           data: {
             labels: [{% for i in pager.items|reverse %}"{{ i.name }}",{% endfor %}],
             datasets: [{
-              label: '# of Votes',
+              label: 'average performance index per run',
               data: [{% for i in pager.items|reverse %}{{ i.perf_index }},{% endfor %}],
               borderWidth: 1
             }]
