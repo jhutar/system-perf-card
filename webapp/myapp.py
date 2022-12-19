@@ -17,13 +17,26 @@ from sqlalchemy.sql import func
 
 
 TREASHOLDS = {
-    "sysbench memory run --memory-access-mode=seq --time=60 --threads=1": 6846183.03,
-    "sysbench memory run --memory-access-mode=seq --time=60 --threads=16": 1800543.07,
-    "sysbench memory run --memory-access-mode=rnd --time=60 --threads=1": 820909.95,
-    "sysbench memory run --memory-access-mode=rnd --time=60 --threads=16": 4570970,
-    "stress-ng --cpu 1 --cpu-method int32 --timeout 1m --oomable --metrics": 35992331,
-    "stress-ng --cpu 0 --cpu-method int32 --timeout 1m --oomable --metrics": 177700,
-    "stress-ng --matrix 1 --timeout 1m --oomable --metrics": 1389032,
+    "sysbench memory run --memory-access-mode=seq --time=60 --threads=1": 4707590.65,
+    "sysbench memory run --memory-access-mode=seq --time=60 --threads=16":6995066.88,
+    "sysbench memory run --memory-access-mode=rnd --time=60 --threads=1":1797867.98,
+    "sysbench memory run --memory-access-mode=rnd --time=60 --threads=16":822498.42,
+    "stress-ng --cpu 1 --cpu-method int32 --timeout 1m --oomable --metrics":4613675,
+    "stress-ng --cpu 0 --cpu-method int32 --timeout 1m --oomable --metrics":35968160,
+    "stress-ng --matrix 1 --timeout 1m --oomable --metrics":176314,
+    "stress-ng --matrix 0 --timeout 1m --oomable --metrics":1389884,
+    "stress-ng --mq 0 -t 30s --oomable --metrics":34197581,
+    "stress-ng --vm 2 --vm-bytes 1G --page-in --timeout 1m --oomable --metrics":5011932,
+    "stress-ng --timer 32 --timer-freq 1000000 --timeout 1m --oomable --metrics":42746792,
+    "stress-ng --userfaultfd 0 --timeout 1m --oomable --metrics":24294961,
+    "fio --directory=/fiotest --name fio_test_file --direct=1 --rw=randread --bs=16k --size=1G --numjobs=16 --time_based --runtime=60s --group_reporting --norandommap":20300,
+    "fio --directory=/fiotest --ioengine=psync --name fio_test_file --direct=1 --rw=randwrite --bs=16k --size=1G --numjobs=16 --time_based --runtime=60s --group_reporting --norandommap":6196,
+    "fio --directory=/fiotest --direct=1 --rw=read --randrepeat=0 --ioengine=libaio --bs=1024k --size=1G --iodepth=8 --time_based=1 --runtime=60s --name=fio_direct_read_test":316,
+    "fio --directory=/fiotest --direct=1 --rw=write --randrepeat=0 --ioengine=libaio --bs=1024k --size=1G --iodepth=8 --time_based=1 --runtime=60s --name=fio_direct_write_test":606,
+    "sysbench memory run --memory-access-mode=seq --time=60 --threads=1":4687364.83,
+    "sysbench memory run --memory-access-mode=seq --time=60 --threads=16":6944556.98,
+    "sysbench memory run --memory-access-mode=rnd --time=60 --threads=1":1790700.35,
+    "sysbench memory run --memory-access-mode=rnd --time=60 --threads=16":817756.61,
 }
 
 
@@ -105,6 +118,13 @@ class Result(app_db.Model):
             "result": self.result,
             "run_id": self.run_id,
         }
+
+    def perf_index(self):
+        if self.command not in TREASHOLDS:
+            app.logger.error(f"Result {self.id} did not found treshold for {self.command}")
+            return None
+        else:
+            return self.result / TREASHOLDS[self.command]
 
 
 ##########
