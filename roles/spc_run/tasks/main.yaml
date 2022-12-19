@@ -1,4 +1,10 @@
 ---
+- name: "Construct run name"
+  set_fact:
+    spc_run_name: "{{ lookup('lines', 'date --utc -Ins') | first }}"
+  run_once: yes
+  when: "spc_run_name is not defined"
+
 - name: "Running the test"
   command: podman exec -ti pbench bash -c "source /opt/pbench-agent/profile; pbench-clear-results; pbench-user-benchmark -- {{ spc_command }}"
   register: spc_output
@@ -70,6 +76,7 @@
       result: "{{ spc_result }}"
       measurements_url: "{{ spc_measurements_url }}"
       area: "{{ spc_area }}"
+      run_name: "{{ spc_run_name }}"
   register: spc_upload_result_cmd
 
 - name: "Ensure upload worked"
