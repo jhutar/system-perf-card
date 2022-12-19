@@ -5,9 +5,14 @@
 {% endblock %}
 
 {% block content %}
-    <p>Host: {{ host.hostname }}</p>
-    <p>Machine ID: {{ host.machine_id }}</p>
-    <p>First seen: {{ host.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+  <dl>
+    <dt>Hostname</dt>
+    <dd><code>{{ host.hostname }}</code></dd>
+    <dt>Machine ID <small class="text-muted">(find it in <code>/etc/machine-id</code>)</small></dt>
+    <dd><code>{{ host.machine_id }}</code></dd>
+    <dt>Created at</dt>
+    <dd>{{ host.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+  </dl>
 
   <div class="row">
     <table class="table">
