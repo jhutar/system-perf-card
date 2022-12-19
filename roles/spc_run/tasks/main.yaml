@@ -1,7 +1,7 @@
 ---
 - name: "Construct run name"
   set_fact:
-    spc_run_name: "{{ lookup('lines', 'date --utc -Ins') | first }}"
+    spc_run_name: "{{ lookup('pipe', 'date --utc -Ins') | regex_replace('[^a-zA-Z0-9-]+', '_') | regex_replace('_00_00$', '') }}"
   run_once: yes
   when: "spc_run_name is not defined"
 
