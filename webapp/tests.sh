@@ -32,5 +32,10 @@ curl --silent -X POST http://127.0.0.1:5000/api/v1/result -H "Content-Type: appl
 curl --silent -X GET http://127.0.0.1:5000/api/v1/host | grep '"total": 1'
 curl --silent -X GET http://127.0.0.1:5000/api/v1/run | grep '"total": 1'
 curl --silent -X GET http://127.0.0.1:5000/api/v1/result | grep '"total": 2'
+curl --silent -X POST http://127.0.0.1:5000/api/v1/result -H "Content-Type: application/json" -d '{"machine_id": "abcdef0123456789", "hostname": "abc.example.com", "area": "disk", "command": "fio --directory=/fiotest --name fio_test_file --direct=1 --rw=randread --bs=16k --size=1G --numjobs=16 --time_based --runtime=60s --group_reporting --norandommap", "rc": 0, "result": 123456, "measurements_url": "http://pbench.example.com/results/xyz", "start": "2022-12-15 12:12:12.123456", "end": "2022-12-15 12:24:24.654321", "run_name": "2022-12-15T12:00:00,000000000+00:00"}'
+curl --silent -X GET http://127.0.0.1:5000/api/v1/host | grep '"total": 1'
+curl --silent -X GET http://127.0.0.1:5000/api/v1/run | grep '"total": 2'
+curl --silent -X GET http://127.0.0.1:5000/api/v1/result | grep '"total": 3'
+curl --silent -X GET http://127.0.0.1:5000/api/v1/result
 
 echo "SUCCESS"
