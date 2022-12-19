@@ -11,5 +11,6 @@
     <p>Runtime: {{ result.start.strftime('%Y-%m-%d %H:%M:%S') }} - {{ result.end.strftime('%Y-%m-%d %H:%M:%S') }}</p>
     <p>Result: {{ result.result }}</p>
     <p>Created: {{ result.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+    <p>Mesurements directory: <a href="{{ result.measurements_url }}">details</a></p>
     <p>Performance index: <strong>{{ result.perf_index() }}</strong></p>
 {% endblock %}
