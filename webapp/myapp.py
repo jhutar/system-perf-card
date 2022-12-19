@@ -170,13 +170,13 @@ def get_host():
 @app.route('/host/<string:machine_id>', methods=['GET'])
 def get_host_machine_id(machine_id):
     db_host = Host.query.filter_by(machine_id=machine_id).first_or_404()
-    pager = _paginate(Run.query.filter(Run.host==db_host))
+    pager = _paginate(Run.query.filter_by(host=db_host))
     return flask.render_template('items/get_host_machine_id.html', host=db_host, pager=pager)
 
 @app.route('/run/<int:rid>', methods=['GET'])
 def get_run_rid(rid):
     db_run = Run.query.filter_by(id=rid).first_or_404()
-    pager = _paginate(Result.query.filter(Result.run==db_run))
+    pager = _paginate(Result.query.filter_by(run=db_run))
     return flask.render_template('items/get_run_rid.html', run=db_run, pager=pager)
 
 @app.route('/result/<int:rid>', methods=['GET'])
