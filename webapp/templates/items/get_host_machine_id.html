@@ -5,14 +5,52 @@
 {% endblock %}
 
 {% block content %}
-  <dl>
-    <dt>Hostname</dt>
-    <dd><code>{{ host.hostname }}</code></dd>
-    <dt>Machine ID <small class="text-muted">(find it in <code>/etc/machine-id</code>)</small></dt>
-    <dd><code>{{ host.machine_id }}</code></dd>
-    <dt>Created at</dt>
-    <dd>{{ host.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
-  </dl>
+  <div class="row">
+
+    <div class="col">
+      <dl>
+        <dt>Hostname</dt>
+        <dd><code>{{ host.hostname }}</code></dd>
+        <dt>Machine ID <small class="text-muted">(find it in <code>/etc/machine-id</code>)</small></dt>
+        <dd><code>{{ host.machine_id }}</code></dd>
+        <dt>Created at</dt>
+        <dd>{{ host.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+      </dl>
+    </div>
+
+    <div class="col" style="padding: 10px;">
+      <canvas id="myChart" width="300" height="100"></canvas>
+
+      <script>
+        const ctx = document.getElementById('myChart');
+
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: [{% for i in pager.items|reverse %}"{{ i.name }}",{% endfor %}],
+            datasets: [{
+              label: '# of Votes',
+              data: [{% for i in pager.items|reverse %}{{ i.perf_index }},{% endfor %}],
+              borderWidth: 1
+            }]
+          },
+          options: {
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            },
+            plugins: {
+              legend: {
+                display: false
+              }
+            }
+          }
+        });
+      </script>
+    </div>
+
+  </div>
 
   <div class="row">
     <table class="table">
