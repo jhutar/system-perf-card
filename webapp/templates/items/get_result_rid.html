@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Result {{ result.id }}{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+    <p>Command: <code>{{ result.command }}</code></p>
+    <p>Area: {{ result.area }}</p>
+    <p>From run: <a href="{{ url_for('get_run_rid', rid=result.run.id) }}">{{ result.run.name }}</a></p>
+    <p>Runtime: {{ result.start.strftime('%Y-%m-%d %H:%M:%S') }} - {{ result.end.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+    <p>Result: {{ result.result }}</p>
+    <p>Created: {{ result.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+{% endblock %}

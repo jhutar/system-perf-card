@@ -1,14 +1,18 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h1>{% block title %}Hosts{% endblock %}</h1>
+  <h1>{% block title %}Details on {{ host.hostname }}{% endblock %}</h1>
 {% endblock %}
 
 {% block content %}
+    <p>Host: {{ host.hostname }}</p>
+    <p>Machine ID: {{ host.machine_id }}</p>
+    <p>First seen: {{ host.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+
   <div class="row">
     <ul>
     {% for i in pager.items %}
-         <li><a href="{{ url_for('get_host_machine_id', machine_id=i.machine_id) }}">Host {{ i.hostname }}</a></li>
+         <li>Run <a href="{{ url_for('get_run_rid', rid=i.id) }}">{{ i.name }}</a> (created {{ i.created_at.strftime('%Y-%m-%d %H:%M:%S') }}) - {{ i.results | length }} results</li>
     {% endfor %}
     </ul>
   </div>

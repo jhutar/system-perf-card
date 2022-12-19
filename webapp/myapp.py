@@ -108,7 +108,7 @@ class Result(app_db.Model):
 
 
 ##########
-# Routes
+# Utils
 ##########
 
 def _paginate(query):
@@ -131,6 +131,11 @@ def _serialize(query):
         "items": [d.serialize() for d in data.items],
     }
 
+
+##########
+# Routes
+##########
+
 @app.route('/', methods=['GET'])
 def get_index():
     """Main page."""
@@ -139,42 +144,25 @@ def get_index():
 @app.route('/host', methods=['GET'])
 def get_host():
     """List hosts."""
-    pager = _paginate(Result.query.with_entities(Result.machine_id).distinct())
+    pager = _paginate(Host.query)
     return flask.render_template('items/get_host.html', pager=pager)
 
 @app.route('/host/<string:machine_id>', methods=['GET'])
 def get_host_machine_id(machine_id):
-    ###paget = _paginate(Result.query.filter_by(machine_id=machine_id))
-    from sqlalchemy import func
+    db_host = Host.query.filter_by(machine_id=machine_id).first_or_404()
+    pager = _paginate(Run.query.filter(Run.host==db_host))
+    return flask.render_template('items/get_host_machine_id.html', host=db_host, pager=pager)
 
-    subquery = (
-        Result
-        .query
-        .filter_by(machine_id=machine_id)
-        .with_entities(
-            Result.command,
-            Result.created_at,
-            Result.id,
-            Result.result,
-            func.row_number().over(
-                partition_by=Result.command,
-                order_by=Result.created_at.desc()
-            ).label("rn")
-        ).subquery()
-    )
-    full_query = (
-        Result.query.with_entities(
-            subquery.c.command,
-            subquery.c.created_at,
-            subquery.c.id,
-            subquery.c.result
-        )
-        .select_from(subquery)
-        .filter(subquery.c.rn == 1)
-        .all()
-    )
+@app.route('/run/<int:rid>', methods=['GET'])
+def get_run_rid(rid):
+    db_run = Run.query.filter_by(id=rid).first_or_404()
+    pager = _paginate(Result.query.filter(Result.run==db_run))
+    return flask.render_template('items/get_run_rid.html', run=db_run, pager=pager)
 
-    return "TODO"
+@app.route('/result/<int:rid>', methods=['GET'])
+def get_result_rid(rid):
+    db_result = Result.query.filter_by(id=rid).first_or_404()
+    return flask.render_template('items/get_result_rid.html', result=db_result)
 
 
 ##########
@@ -232,11 +220,6 @@ def api_v1_post_result():
     app_db.session.commit()
 
     return {"result": "created", "data": db_result.serialize()}, 201
-
-@app.route('/api/v1/result/<string:machine_id>', methods=['GET'])
-def api_v1_get_result_machine_id(machine_id):
-    """Get info about result by it's machine_id."""
-    return Result.query.filter_by(machine_id=machine_id).serialize()
 
 @app.route('/api/v1/result/<int:rid>', methods=['GET'])
 def api_v1_get_result_rid(rid):
