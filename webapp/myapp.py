@@ -187,6 +187,38 @@ def get_result_rid(rid):
     db_result = Result.query.filter_by(id=rid).first_or_404()
     return flask.render_template('items/get_result_rid.html', result=db_result)
 
+@app.route('/compare', methods=['GET'])
+def get_compare():
+    """Compare two hosts."""
+    data = {
+        "host1": flask.request.args.get('host1', None),
+        "host2": flask.request.args.get('host2', None),
+    }
+
+    if data["host1"] is not None and data["host2"] is not None:
+        data["db_host1"] = Host.query.filter_by(machine_id=data["host1"]).first_or_404()
+        data["db_host2"] = Host.query.filter_by(machine_id=data["host2"]).first_or_404()
+
+        data["db_run1"] = Run.query.filter_by(host=data["db_host1"]).order_by(Run.created_at.desc()).limit(1).first()
+        data["db_run2"] = Run.query.filter_by(host=data["db_host2"]).order_by(Run.created_at.desc()).limit(1).first()
+
+        benchmarks1 = {r.command for r in data["db_run1"].results}
+        benchmarks2 = {r.command for r in data["db_run2"].results}
+        benchmarks = sorted(benchmarks1.intersection(benchmarks2))
+
+        comparision = {b: [None, None] for b in benchmarks}
+
+        for r in data["db_run1"].results:
+            if r.command in comparision:
+                comparision[r.command][0] = r.result
+        for r in data["db_run2"].results:
+            if r.command in comparision:
+                comparision[r.command][1] = r.result
+        data["comparision"] = comparision
+
+    return flask.render_template('items/get_compare.html', **data)
+
+
 
 ##########
 # API

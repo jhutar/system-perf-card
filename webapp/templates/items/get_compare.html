@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Comparing{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+    {% if host1 is none or host2 is none %}
+
+      <form action="{{ url_for('get_compare') }}" method="get">
+        <div class="form-group">
+          <label for="host1"></label>
+          <input type="host1" class="form-control" id="host1" name="host1" aria-describedby="host1Help" placeholder="Enter first host machine ID">
+          <small id="host1Help" class="form-text text-muted">Enter machine ID of a first host.</small>
+        </div>
+        <div class="form-group">
+          <label for="host2"></label>
+          <input type="host2" class="form-control" id="host2" name="host2" aria-describedby="host2Help" placeholder="Enter second host machine ID">
+          <small id="host2Help" class="form-text text-muted">Enter machine ID of a second host.</small>
+        </div>
+        <button type="submit" class="btn btn-primary">Compare</button>
+      </form>
+
+    {% else %}
+
+      <div class="row">
+        <div class="col">
+          <dl>
+            <dt>Hostname</dt>
+            <dd><code>{{ db_host1.hostname }}</code></dd>
+            <dt>Machine ID <small class="text-muted">(find it in <code>/etc/machine-id</code>)</small></dt>
+            <dd><code>{{ db_host1.machine_id }}</code></dd>
+            <dt>Created at</dt>
+            <dd>{{ db_host1.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+          </dl>
+        </div>
+        <div class="col">
+          <dl>
+            <dt>Hostname</dt>
+            <dd><code>{{ db_host2.hostname }}</code></dd>
+            <dt>Machine ID <small class="text-muted">(find it in <code>/etc/machine-id</code>)</small></dt>
+            <dd><code>{{ db_host2.machine_id }}</code></dd>
+            <dt>Created at</dt>
+            <dd>{{ db_host2.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+          </dl>
+        </div>
+      </div>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">benchmark</th>
+            <th scope="col"><code>{{ db_host1.hostname }}</code> raw result</th>
+            <th scope="col"><code>{{ db_host2.hostname }}</code> raw result</th>
+            <th scope="col">relative difference</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for command, results in comparision.items() %}
+          {% set change = (results[1] / results[0] - 1) * 100 %}
+          <tr class="{% if change < -5 %}table-danger{% elif change > 5 %}table-success{% endif %}">
+            <th scope="row"><code>{{ command }}</code></th>
+            <td>{{ results[0] }}</td>
+            <td>{{ results[1] }}</td>
+            <td>{{ change | round(2) }}%</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+    {% endif %}
+{% endblock %}
