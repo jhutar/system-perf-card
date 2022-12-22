@@ -27,21 +27,25 @@
         <div class="col">
           <dl>
             <dt>Hostname</dt>
-            <dd><code>{{ db_host1.hostname }}</code></dd>
+            <dd><code><a href="{{ url_for('get_host_machine_id', machine_id=db_host1.machine_id) }}">{{ db_host1.hostname }}</a></code></dd>
             <dt>Machine ID <small class="text-muted">(find it in <code>/etc/machine-id</code>)</small></dt>
             <dd><code>{{ db_host1.machine_id }}</code></dd>
+            <dt>Run</dt>
+            <dd><a href="{{ url_for('get_run_rid', rid=db_run1.id) }}">{{ db_run1.name }}</a></dd>
             <dt>Created at</dt>
-            <dd>{{ db_host1.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+            <dd>{{ db_run1.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
           </dl>
         </div>
         <div class="col">
           <dl>
             <dt>Hostname</dt>
-            <dd><code>{{ db_host2.hostname }}</code></dd>
+            <dd><code><a href="{{ url_for('get_host_machine_id', machine_id=db_host2.machine_id) }}">{{ db_host2.hostname }}</a></code></dd>
             <dt>Machine ID <small class="text-muted">(find it in <code>/etc/machine-id</code>)</small></dt>
             <dd><code>{{ db_host2.machine_id }}</code></dd>
+            <dt>Run</dt>
+            <dd><a href="{{ url_for('get_run_rid', rid=db_run2.id) }}">{{ db_run2.name }}</a></dd>
             <dt>Created at</dt>
-            <dd>{{ db_host2.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+            <dd>{{ db_run2.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
           </dl>
         </div>
       </div>
