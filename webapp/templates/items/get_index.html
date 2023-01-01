@@ -5,5 +5,85 @@
 {% endblock %}
 
 {% block content %}
-  <p>Hello world!</p>
+
+  <p>
+  This application tries to address these use-cases:
+  </p>
+
+  <ol>
+    <li>Measure HW and OS performance of a host and create <strong>one number</strong> to express it. Allow to drill down to details.</li>
+    <li>We want to assess raw HW or OS performance of multiple hosts, so we can <strong>compare</strong> them to allow us to relate the difference to different performance of our workload on them.</li>
+    <li>We want to know how host performance changes <strong>over time</strong> as OS updates or HW changes are being applied.</li>
+  </ol>
+
+  <p>
+  And main goal here is to make the process as simple as possible: run and evaluate the test and do not modify the tested host in any way.
+  </p>
+
+  <p>
+  To be able to achieve this, we need bunch of benchmarks to measure different performance aspects of a host.
+  Then we can make the result relative to some baseline and compare these relative numbers across hosts.
+  There are few benchmarks to measure memory performance, some to measure CPU (I assume some measure memory as well) and few to measure disk.
+  As of now, we define these benchmarks with these baseline numbers:
+  </p>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">command</th>
+        <th scope="col">baseline</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for command, baseline in benchmarks.items() %}
+      <tr>
+        <td scope="row"><code>{{ command }}</code></td>
+        <td>{{ baseline }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <p>
+  We can have lots of complains about the selection.
+  Some that come to my mind in no particular order:
+  </p>
+
+  <ul>
+    <li>Benchmarks running for 1 minute only? Come on!</li>
+    <li>Metrics in stress-ng are not meant to be used for benchmarking/measurements!</li>
+    <li>This is only testing root disk performance!</li>
+    <li>Who picked these params here? They are completely wrong!</li>
+    <li>...please share yours</li>
+  </ul>
+
+  <p>
+  Although I agree with the complaints above, I still think this set of benchmarks is some start.
+  Let's just assume, for now, these make sense.
+  </p>
+
+  <p>
+  For every benchmark, I also define a reg-exp on how to get a single numerical result from the output.
+  It uses modified <code>quay.io/pbench/pbench-agent-all-centos-8</code> container from <a href="https://distributed-system-analysis.github.io/pbench/">pbench</a> project to run the test and store monitoring data.
+  </p>
+
+  <p>
+  Every JSON result upload contains:
+  </p>
+
+  <ul>
+    <li>Identification of a host where it was running (hostname and machine ID).</li>
+    <li>Command with a benchmark that was running. Also it's return code.</li>
+    <li>Parsed numerical result of a benchmark.</li>
+    <li>Test run ID (one ID common to all benchmarks ran in given iteration), data and some more metadata.</li>
+  </ul>
+
+  <p>
+  This application then allows to see:
+  </p>
+
+  <ul>
+    <li>History of runs per <a href="{{ url_for('get_host') }}">host</a>, how final single performance index number changed over time for a host.</li>
+    <li><a href="{{ url_for('get_compare') }}">Compare</a> results from two systems to assess how different they are regarding performance.</li>
+  </ul>
 {% endblock %}

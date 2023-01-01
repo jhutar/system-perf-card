@@ -169,7 +169,7 @@ def _serialize(query):
 @app.route("/", methods=["GET"])
 def get_index():
     """Main page."""
-    return flask.render_template("items/get_index.html")
+    return flask.render_template("items/get_index.html", benchmarks=TREASHOLDS)
 
 
 @app.route("/host", methods=["GET"])
