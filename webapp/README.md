@@ -6,6 +6,18 @@ Webapp to store and present system performance card results
 Usage
 -----
 
+This is a simple Flask application that allows to upload JSONs with benchmark run details and visualize them.
+Every upload contains:
+
+* Identification of a host where it was running (hostname and machine ID).
+* Command with a benchmark that was running. Also it's return code.
+* Parsed numerical result of a benchmark.
+* Test run ID (one ID common to all benchmarks ran in given iteration), data and some more metadata.
+
+App then allows to see:
+
+* History of runs per host, how final single performance index number changed over time for a host.
+* Compare results from two systems to assess how different they are regarding performance.
 
 Developing
 ----------
@@ -65,7 +77,7 @@ And to run it:
 Testing
 -------
 
-To test basic functionality, ensure you do not have some server listening
-on port 5000 and run below command. Note it will remove /tmp/database.db file.
+To test basic functionality, ensure you do not have some server listening on port 5000 and run below command.
+Note it will remove /tmp/database.db file.
 
     ./tests.sh
