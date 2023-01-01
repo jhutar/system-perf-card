@@ -187,7 +187,7 @@ def get_run_rid(rid):
 def get_result_rid(rid):
     db_result = Result.query.filter_by(id=rid).first_or_404()
     db_host = db_result.run.host
-    pager = _paginate(Result.query.filter_by(command=db_result.command).join(Run).filter_by(host_id=db_host.id))
+    pager = _paginate(Result.query.filter_by(command=db_result.command).join(Run).filter_by(host_id=db_host.id).order_by(Result.created_at.desc()))
     return flask.render_template('items/get_result_rid.html', result=db_result, host=db_host, pager=pager)
 
 @app.route('/compare', methods=['GET'])
