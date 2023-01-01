@@ -4,6 +4,12 @@
   <h1>{% block title %}Run {{ run.name }}{% endblock %}</h1>
 {% endblock %}
 
+{% block breadcrumb %}
+  <li class="breadcrumb-item"><a href="{{ url_for('get_host') }}">Hosts</a></li>
+  <li class="breadcrumb-item"><a href="{{ url_for('get_host_machine_id', machine_id=run.host.machine_id) }}">{{ run.host.hostname }}</a></li>
+  <li class="breadcrumb-item active" aria-current="page">{{ run.name }}</li>
+{% endblock %}
+
 {% block content %}
   <div class="row">
 

@@ -4,6 +4,13 @@
   <h1>{% block title %}Result {{ result.id }}{% endblock %}</h1>
 {% endblock %}
 
+{% block breadcrumb %}
+  <li class="breadcrumb-item"><a href="{{ url_for('get_host') }}">Hosts</a></li>
+  <li class="breadcrumb-item"><a href="{{ url_for('get_host_machine_id', machine_id=host.machine_id) }}">{{ host.hostname }}</a></li>
+  <li class="breadcrumb-item"><a href="{{ url_for('get_run_rid', rid=result.run.id) }}">{{ result.run.name }}</a></li>
+  <li class="breadcrumb-item active d-inline-block text-truncate" style="max-width: 16em;" aria-current="page">{{ result.command }}</li>
+{% endblock %}
+
 {% block content %}
   <div class="row">
 

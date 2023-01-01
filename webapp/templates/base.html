@@ -28,6 +28,14 @@
       </div>
     </nav>
 
+    {% if self.breadcrumb() | trim %}
+    <nav class="container small" aria-label="breadcrumb">
+      <ol class="breadcrumb">
+      {% block breadcrumb %}{% endblock %}
+      </ol>
+    </nav>
+    {% endif %}
+
     <section class="container">
       <header>
         {% block header %}{% endblock %}
