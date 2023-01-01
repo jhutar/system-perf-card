@@ -5,22 +5,61 @@
 {% endblock %}
 
 {% block content %}
-  <dl>
-    <dt>Command</dt>
-    <dd><code>{{ result.command }}</code></dd>
-    <dt>Area</dt>
-    <dd>{{ result.area }}</dd>
-    <dt>From run</dt>
-    <dd><a href="{{ url_for('get_run_rid', rid=result.run.id) }}">{{ result.run.name }}</a></dd>
-    <dt>Runtime</dt>
-    <dd>{{ result.start.strftime('%Y-%m-%d %H:%M:%S') }} - {{ result.end.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
-    <dt>Mesurements directory</td>
-    <dd><a href="{{ result.measurements_url }}">details</a></dd>
-    <dt>Raw result</dt>
-    <dd>{{ result.result }}</dd>
-    <dt>Performance index <small class="text-muted">(raw result relative to baseline result of this test)</small></dt>
-    <dd>{{ result.perf_index() }}</dd>
-    <dt>Created at</dt>
-    <dd>{{ result.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
-  </dl>
+  <div class="row">
+
+    <div class="col">
+      <dl>
+        <dt>Command</dt>
+        <dd><code>{{ result.command }}</code></dd>
+        <dt>Area</dt>
+        <dd>{{ result.area }}</dd>
+        <dt>From host</dt>
+        <dd><a href="{{ url_for('get_host_machine_id', machine_id=host.machine_id) }}">{{ host.hostname }}</a></dd>
+        <dt>From run</dt>
+        <dd><a href="{{ url_for('get_run_rid', rid=result.run.id) }}">{{ result.run.name }}</a></dd>
+        <dt>Runtime</dt>
+        <dd>{{ result.start.strftime('%Y-%m-%d %H:%M:%S') }} - {{ result.end.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+        <dt>Mesurements directory</td>
+        <dd><a href="{{ result.measurements_url }}">details</a></dd>
+        <dt>Raw result</dt>
+        <dd>{{ result.result }}</dd>
+        <dt>Performance index <small class="text-muted">(raw result relative to baseline result of this test)</small></dt>
+        <dd>{{ result.perf_index() }}</dd>
+        <dt>Created at</dt>
+        <dd>{{ result.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+      </dl>
+    </div>
+
+    <div class="col" style="padding: 10px;">
+      <canvas id="myChart" width="300" height="100"></canvas>
+
+      <script>
+        const ctx = document.getElementById('myChart');
+
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: [{% for i in pager.items|reverse %}"{{ i.run.name }}",{% endfor %}],
+            datasets: [{
+              label: 'performance index per run',
+              data: [{% for i in pager.items|reverse %}{{ i.perf_index() }},{% endfor %}],
+              borderWidth: 1
+            }]
+          },
+          options: {
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            },
+            plugins: {
+              legend: {
+                display: false
+              }
+            }
+          }
+        });
+      </script>
+    </div>
+  </div>
 {% endblock %}

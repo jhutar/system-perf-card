@@ -40,6 +40,7 @@ app = flask.Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{ os.environ['SQLITE_FILE'] }"
 ###app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://{ os.environ['POSTGRESQL_USER'] }:{ os.environ['POSTGRESQL_PASSWORD'] }@{ os.environ['POSTGRESQL_HOST'] }:{ os.environ['POSTGRESQL_PORT'] }/{ os.environ['POSTGRESQL_DATABASE'] }"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ECHO'] = True
 
 app_db = flask_sqlalchemy.SQLAlchemy(app)
 
@@ -185,7 +186,9 @@ def get_run_rid(rid):
 @app.route('/result/<int:rid>', methods=['GET'])
 def get_result_rid(rid):
     db_result = Result.query.filter_by(id=rid).first_or_404()
-    return flask.render_template('items/get_result_rid.html', result=db_result)
+    db_host = db_result.run.host
+    pager = _paginate(Result.query.filter_by(command=db_result.command).join(Run).filter_by(host_id=db_host.id))
+    return flask.render_template('items/get_result_rid.html', result=db_result, host=db_host, pager=pager)
 
 @app.route('/compare', methods=['GET'])
 def get_compare():
