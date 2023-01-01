@@ -1,11 +1,7 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  {% if host1 is none or host2 is none %}
-    <h1>{% block title %}Compare{% endblock %}</h1>
-  {% else %}
-    <h1>{% block title %}Comparing{% endblock %}</h1>
-  {% endif %}
+  <h1>{% block title %}{% if host1 is none or host2 is none %}Compare{% else %}Comparing{% endif %}{% endblock %}</h1>
 {% endblock %}
 
 {% block content %}
