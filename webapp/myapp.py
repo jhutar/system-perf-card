@@ -37,10 +37,10 @@ TREASHOLDS = {
 
 
 app = flask.Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{ os.environ['SQLITE_FILE'] }"
+app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{ os.environ['SQLITE_FILE'] }"
 ###app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://{ os.environ['POSTGRESQL_USER'] }:{ os.environ['POSTGRESQL_PASSWORD'] }@{ os.environ['POSTGRESQL_HOST'] }:{ os.environ['POSTGRESQL_PORT'] }/{ os.environ['POSTGRESQL_DATABASE'] }"
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_ECHO'] = True
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SQLALCHEMY_ECHO"] = True
 
 app_db = flask_sqlalchemy.SQLAlchemy(app)
 
@@ -51,15 +51,18 @@ app_migrate = flask_migrate.Migrate(app, app_db)
 # Models
 ##########
 
+
 class Host(app_db.Model):
     id = app_db.Column(app_db.Integer, primary_key=True)
-    created_at = app_db.Column(app_db.DateTime(timezone=True), server_default=func.now())
+    created_at = app_db.Column(
+        app_db.DateTime(timezone=True), server_default=func.now()
+    )
     machine_id = app_db.Column(app_db.String(80), unique=False, nullable=False)
     hostname = app_db.Column(app_db.String(200), unique=False, nullable=False)
-    runs = app_db.relationship('Run', backref='host')
+    runs = app_db.relationship("Run", backref="host")
 
     def __repr__(self):
-        return f'<Host {self.id}>'
+        return f"<Host {self.id}>"
 
     def serialize(self):
         return {
@@ -69,15 +72,18 @@ class Host(app_db.Model):
             "hostname": self.hostname,
         }
 
+
 class Run(app_db.Model):
     id = app_db.Column(app_db.Integer, primary_key=True)
-    created_at = app_db.Column(app_db.DateTime(timezone=True), server_default=func.now())
+    created_at = app_db.Column(
+        app_db.DateTime(timezone=True), server_default=func.now()
+    )
     name = app_db.Column(app_db.String(80), unique=False, nullable=False)
-    host_id = app_db.Column(app_db.Integer, app_db.ForeignKey('host.id'))
+    host_id = app_db.Column(app_db.Integer, app_db.ForeignKey("host.id"))
     results = app_db.relationship("Result", backref="run")
 
     def __repr__(self):
-        return f'<Run {self.id}>'
+        return f"<Run {self.id}>"
 
     def serialize(self):
         return {
@@ -87,9 +93,12 @@ class Run(app_db.Model):
             "host_id": self.host_id,
         }
 
+
 class Result(app_db.Model):
     id = app_db.Column(app_db.Integer, primary_key=True)
-    created_at = app_db.Column(app_db.DateTime(timezone=True), server_default=func.now())
+    created_at = app_db.Column(
+        app_db.DateTime(timezone=True), server_default=func.now()
+    )
     start = app_db.Column(app_db.DateTime(timezone=True), unique=False, nullable=False)
     end = app_db.Column(app_db.DateTime(timezone=True), unique=False, nullable=False)
     area = app_db.Column(app_db.String(80), unique=False, nullable=False)
@@ -97,10 +106,10 @@ class Result(app_db.Model):
     rc = app_db.Column(app_db.Integer, unique=False, nullable=False)
     measurements_url = app_db.Column(app_db.Text, unique=False, nullable=False)
     result = app_db.Column(app_db.Integer, unique=False, nullable=False)
-    run_id = app_db.Column(app_db.Integer, app_db.ForeignKey('run.id'))
+    run_id = app_db.Column(app_db.Integer, app_db.ForeignKey("run.id"))
 
     def __repr__(self):
-        return f'<Result {self.id}>'
+        return f"<Result {self.id}>"
 
     def serialize(self):
         return {
@@ -118,7 +127,9 @@ class Result(app_db.Model):
 
     def perf_index(self):
         if self.command not in TREASHOLDS:
-            app.logger.error(f"Result {self.id} did not found treshold for {self.command}")
+            app.logger.error(
+                f"Result {self.id} did not found treshold for {self.command}"
+            )
             return None
         else:
             return self.result / TREASHOLDS[self.command]
@@ -128,9 +139,10 @@ class Result(app_db.Model):
 # Utils
 ##########
 
+
 def _paginate(query):
-    if 'page' in flask.request.args:
-        page = int(flask.request.args['page'])
+    if "page" in flask.request.args:
+        page = int(flask.request.args["page"])
     else:
         page = 1
 
@@ -153,18 +165,21 @@ def _serialize(query):
 # Routes
 ##########
 
-@app.route('/', methods=['GET'])
+
+@app.route("/", methods=["GET"])
 def get_index():
     """Main page."""
-    return flask.render_template('items/get_index.html')
+    return flask.render_template("items/get_index.html")
 
-@app.route('/host', methods=['GET'])
+
+@app.route("/host", methods=["GET"])
 def get_host():
     """List hosts."""
     pager = _paginate(Host.query)
-    return flask.render_template('items/get_host.html', pager=pager)
+    return flask.render_template("items/get_host.html", pager=pager)
 
-@app.route('/host/<string:machine_id>', methods=['GET'])
+
+@app.route("/host/<string:machine_id>", methods=["GET"])
 def get_host_machine_id(machine_id):
     db_host = Host.query.filter_by(machine_id=machine_id).first_or_404()
     pager = _paginate(Run.query.filter_by(host=db_host).order_by(Run.id.desc()))
@@ -175,35 +190,57 @@ def get_host_machine_id(machine_id):
             perf_index_sum += db_result.perf_index()
             perf_index_count += 1
         db_run.perf_index = perf_index_sum / perf_index_count
-    return flask.render_template('items/get_host_machine_id.html', host=db_host, pager=pager)
+    return flask.render_template(
+        "items/get_host_machine_id.html", host=db_host, pager=pager
+    )
 
-@app.route('/run/<int:rid>', methods=['GET'])
+
+@app.route("/run/<int:rid>", methods=["GET"])
 def get_run_rid(rid):
     db_run = Run.query.filter_by(id=rid).first_or_404()
     pager = _paginate(Result.query.filter_by(run=db_run))
-    return flask.render_template('items/get_run_rid.html', run=db_run, pager=pager)
+    return flask.render_template("items/get_run_rid.html", run=db_run, pager=pager)
 
-@app.route('/result/<int:rid>', methods=['GET'])
+
+@app.route("/result/<int:rid>", methods=["GET"])
 def get_result_rid(rid):
     db_result = Result.query.filter_by(id=rid).first_or_404()
     db_host = db_result.run.host
-    pager = _paginate(Result.query.filter_by(command=db_result.command).join(Run).filter_by(host_id=db_host.id).order_by(Result.created_at.desc()))
-    return flask.render_template('items/get_result_rid.html', result=db_result, host=db_host, pager=pager)
+    pager = _paginate(
+        Result.query.filter_by(command=db_result.command)
+        .join(Run)
+        .filter_by(host_id=db_host.id)
+        .order_by(Result.created_at.desc())
+    )
+    return flask.render_template(
+        "items/get_result_rid.html", result=db_result, host=db_host, pager=pager
+    )
 
-@app.route('/compare', methods=['GET'])
+
+@app.route("/compare", methods=["GET"])
 def get_compare():
     """Compare two hosts."""
     data = {
-        "host1": flask.request.args.get('host1', None),
-        "host2": flask.request.args.get('host2', None),
+        "host1": flask.request.args.get("host1", None),
+        "host2": flask.request.args.get("host2", None),
     }
 
     if data["host1"] is not None and data["host2"] is not None:
         data["db_host1"] = Host.query.filter_by(machine_id=data["host1"]).first_or_404()
         data["db_host2"] = Host.query.filter_by(machine_id=data["host2"]).first_or_404()
 
-        data["db_run1"] = Run.query.filter_by(host=data["db_host1"]).order_by(Run.created_at.desc()).limit(1).first()
-        data["db_run2"] = Run.query.filter_by(host=data["db_host2"]).order_by(Run.created_at.desc()).limit(1).first()
+        data["db_run1"] = (
+            Run.query.filter_by(host=data["db_host1"])
+            .order_by(Run.created_at.desc())
+            .limit(1)
+            .first()
+        )
+        data["db_run2"] = (
+            Run.query.filter_by(host=data["db_host2"])
+            .order_by(Run.created_at.desc())
+            .limit(1)
+            .first()
+        )
 
         benchmarks1 = {r.command for r in data["db_run1"].results}
         benchmarks2 = {r.command for r in data["db_run2"].results}
@@ -219,50 +256,55 @@ def get_compare():
                 comparision[r.command][1] = r.result
         data["comparision"] = comparision
 
-    return flask.render_template('items/get_compare.html', **data)
-
+    return flask.render_template("items/get_compare.html", **data)
 
 
 ##########
 # API
 ##########
 
-@app.route('/api/v1/host', methods=['GET'])
+
+@app.route("/api/v1/host", methods=["GET"])
 def api_v1_get_host():
     """List hosts."""
     return _serialize(Host.query)
 
-@app.route('/api/v1/run', methods=['GET'])
+
+@app.route("/api/v1/run", methods=["GET"])
 def api_v1_get_run():
     """List runs."""
     return _serialize(Run.query)
 
-@app.route('/api/v1/result', methods=['GET'])
+
+@app.route("/api/v1/result", methods=["GET"])
 def api_v1_get_result():
     """List results."""
     return _serialize(Result.query)
 
-@app.route('/api/v1/result', methods=['POST'])
+
+@app.route("/api/v1/result", methods=["POST"])
 def api_v1_post_result():
     """Upload new result."""
-    db_host = Host.query.filter_by(machine_id=flask.request.json['machine_id']).first()
+    db_host = Host.query.filter_by(machine_id=flask.request.json["machine_id"]).first()
     if db_host is None:
         db_host = Host(
-            machine_id=flask.request.json['machine_id'],
-            hostname=flask.request.json['hostname'],
+            machine_id=flask.request.json["machine_id"],
+            hostname=flask.request.json["hostname"],
         )
         db_run = None
     else:
-        db_host.hostname = flask.request.json['hostname']
-        db_run = Run.query.filter_by(name=flask.request.json['run_name'], host=db_host).first()
+        db_host.hostname = flask.request.json["hostname"]
+        db_run = Run.query.filter_by(
+            name=flask.request.json["run_name"], host=db_host
+        ).first()
 
     if db_run is None:
         db_run = Run(
-            name=flask.request.json['run_name'],
+            name=flask.request.json["run_name"],
             host=db_host,
         )
 
-    result = flask.request.json['result']
+    result = flask.request.json["result"]
     if isinstance(result, str):
         fixes = {
             "k": 1000,
@@ -276,12 +318,16 @@ def api_v1_post_result():
     result = float(result)
 
     db_result = Result(
-        start=datetime.datetime.strptime(flask.request.json['start'], '%Y-%m-%d %H:%M:%S.%f'),
-        end=datetime.datetime.strptime(flask.request.json['end'], '%Y-%m-%d %H:%M:%S.%f'),
-        area=flask.request.json['area'],
-        command=flask.request.json['command'],
-        rc=flask.request.json['rc'],
-        measurements_url=flask.request.json['measurements_url'],
+        start=datetime.datetime.strptime(
+            flask.request.json["start"], "%Y-%m-%d %H:%M:%S.%f"
+        ),
+        end=datetime.datetime.strptime(
+            flask.request.json["end"], "%Y-%m-%d %H:%M:%S.%f"
+        ),
+        area=flask.request.json["area"],
+        command=flask.request.json["command"],
+        rc=flask.request.json["rc"],
+        measurements_url=flask.request.json["measurements_url"],
         result=result,
         run=db_run,
     )
@@ -293,7 +339,8 @@ def api_v1_post_result():
 
     return {"result": "created", "data": db_result.serialize()}, 201
 
-@app.route('/api/v1/result/<int:rid>', methods=['GET'])
+
+@app.route("/api/v1/result/<int:rid>", methods=["GET"])
 def api_v1_get_result_rid(rid):
     """Get info about result by it's id."""
     return Result.query.filter_by(id=rid).first_or_404().serialize()
