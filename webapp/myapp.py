@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
+import collections
 import datetime
 import os
 
@@ -246,14 +247,18 @@ def get_compare():
         benchmarks2 = {r.command for r in data["db_run2"].results}
         benchmarks = sorted(benchmarks1.intersection(benchmarks2))
 
-        comparision = {b: [None, None] for b in benchmarks}
+        comparision = collections.OrderedDict(
+            [(b, [None, None, None, None]) for b in benchmarks]
+        )
 
         for r in data["db_run1"].results:
             if r.command in comparision:
                 comparision[r.command][0] = r.result
+                comparision[r.command][2] = r.perf_index()
         for r in data["db_run2"].results:
             if r.command in comparision:
                 comparision[r.command][1] = r.result
+                comparision[r.command][3] = r.perf_index()
         data["comparision"] = comparision
 
     return flask.render_template("items/get_compare.html", **data)

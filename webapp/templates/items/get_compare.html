@@ -50,6 +50,55 @@
         </div>
       </div>
 
+      <canvas id="myChart" width="300" height="100"></canvas>
+
+      <script>
+        const ctx = document.getElementById('myChart');
+
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: [{% for command in comparision.keys() %}"{{ command }}",{% endfor %}],
+            datasets: [
+              {
+              label: 'performance index for {{ db_host1.hostname }}',
+              data: [{% for results in comparision.values() %}{{ results[2] }},{% endfor %}],
+              borderWidth: 1
+              },
+              {
+              label: 'performance index for {{ db_host2.hostname }}',
+              data: [{% for results in comparision.values() %}{{ results[3] }},{% endfor %}],
+              borderWidth: 1
+              },
+            ]
+          },
+          options: {
+            scales: {
+              x: {
+                ticks: {
+                  callback: function(value, index, ticks) {
+                    const v = this.getLabelForValue(value)
+                    if (v.length > 8) {
+                      return v.substr(0, 8) + '…';
+                    } else {
+                      return v
+                    }
+                  }
+                }
+              },
+              y: {
+                beginAtZero: true
+              }
+            },
+            plugins: {
+              legend: {
+                display: false
+              }
+            }
+          }
+        });
+      </script>
+
       <table class="table">
         <thead>
           <tr>
