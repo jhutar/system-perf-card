@@ -5,14 +5,11 @@ import collections
 import datetime
 import os
 
-import random
-
-import click
-
 import flask
 
-import flask_sqlalchemy
 import flask_migrate
+
+import flask_sqlalchemy
 
 from sqlalchemy.sql import func
 
@@ -39,7 +36,7 @@ TREASHOLDS = {
 
 app = flask.Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{ os.environ['SQLITE_FILE'] }"
-###app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://{ os.environ['POSTGRESQL_USER'] }:{ os.environ['POSTGRESQL_PASSWORD'] }@{ os.environ['POSTGRESQL_HOST'] }:{ os.environ['POSTGRESQL_PORT'] }/{ os.environ['POSTGRESQL_DATABASE'] }"
+# app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://{ os.environ['POSTGRESQL_USER'] }:{ os.environ['POSTGRESQL_PASSWORD'] }@{ os.environ['POSTGRESQL_HOST'] }:{ os.environ['POSTGRESQL_PORT'] }/{ os.environ['POSTGRESQL_DATABASE'] }"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ECHO"] = True
 
