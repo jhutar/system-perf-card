@@ -31,10 +31,9 @@ Setup terminal environment with what you need to run the app:
     export FLASK_APP=myapp.py
     export SQLITE_FILE=/tmp/database.db
 
-Initialize DB and create some testing data:
+Initialize DB:
 
     flask db upgrade
-    flask test-data
 
 And finally this will get you the server running on `http://127.0.0.1:5000/`:
 
