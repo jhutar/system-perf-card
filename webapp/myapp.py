@@ -70,6 +70,10 @@ class Host(app_db.Model):
             "hostname": self.hostname,
         }
 
+    def perf_index(self):
+        db_run = Run.query.filter_by(host=self).order_by(Run.id.desc()).limit(1).first()
+        return db_run.perf_index()
+
 
 class Run(app_db.Model):
     id = app_db.Column(app_db.Integer, primary_key=True)
@@ -90,6 +94,18 @@ class Run(app_db.Model):
             "name": self.name,
             "host_id": self.host_id,
         }
+
+    def perf_index(self):
+        try:
+            return self._perf_index
+        except AttributeError:
+            perf_index_sum = 0.0
+            perf_index_count = 0
+            for db_result in self.results:
+                perf_index_sum += db_result.perf_index()
+                perf_index_count += 1
+            self._perf_index = perf_index_sum / perf_index_count
+            return self._perf_index
 
 
 class Result(app_db.Model):
@@ -181,13 +197,6 @@ def get_host():
 def get_host_machine_id(machine_id):
     db_host = Host.query.filter_by(machine_id=machine_id).first_or_404()
     pager = _paginate(Run.query.filter_by(host=db_host).order_by(Run.id.desc()))
-    for db_run in pager.items:
-        perf_index_sum = 0.0
-        perf_index_count = 0
-        for db_result in db_run.results:
-            perf_index_sum += db_result.perf_index()
-            perf_index_count += 1
-        db_run.perf_index = perf_index_sum / perf_index_count
     return flask.render_template(
         "items/get_host_machine_id.html", host=db_host, pager=pager
     )
